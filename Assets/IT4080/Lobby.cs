@@ -19,6 +19,8 @@ public class Lobby : NetworkBehaviour
 
         btnStart.gameObject.SetActive(IsHost);
     }
+
+
     public override void OnNetworkSpawn()
     {
         InitialClear();
@@ -62,8 +64,28 @@ public class Lobby : NetworkBehaviour
                 status = "Ready";
             }
             card.SetStatus(status);
-           
+
+            // Connect to the ReadyToggled event on the PlayerCard if we are
+            // the player represented by the card we are creating.
+            if (player.clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                card.ReadyToggled += ClientOnReadyToggled;
+            }
+
+            // If we are the host then we can connect to the KickPlayer event
+            // on the PlayerCard.  This allows us to then kick the player when
+            // the button is pressed.
+            if (IsHost)
+            {
+                card.KickPlayer += HostKickPlayer;
+            }
         }
+    }
+
+
+    private void HostKickPlayer(ulong clientId)
+    {
+        Debug.Log($"Get outta here {clientId}");
     }
 
     private It4080.PlayerCard AddPlayerCard(ulong clientId)
@@ -112,8 +134,9 @@ public class Lobby : NetworkBehaviour
         AddPlayersUsingPlayerData(NetworkHandler.Singleton.allPlayers);
     }
 
-    private void ClientOnReadyToggled(ulong clientId)
+    private void ClientOnReadyToggled(bool isReady)
     {
+        Debug.Log($"Ready = {isReady}");
         EnableStartIfAllReady();
     }
 
@@ -139,6 +162,7 @@ public class Lobby : NetworkBehaviour
             }
         }
 
+        // This should be .Count -1 since the Host does not have a ready button.
         btnStart.enabled = ready == NetworkHandler.Singleton.allPlayers.Count;
         if (btnStart.enabled)
         {

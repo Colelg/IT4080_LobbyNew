@@ -18,8 +18,9 @@ public class NetworkHandler : NetworkBehaviour
 
     public void Awake()
     {
+        Debug.Log("Made it");
 
-         allPlayers = new NetworkList<It4080.PlayerData>();
+        allPlayers = new NetworkList<It4080.PlayerData>();
 
         if (_instance == null)
         {
@@ -31,6 +32,7 @@ public class NetworkHandler : NetworkBehaviour
             Destroy(this);
         }
     }
+
     public override void OnNetworkSpawn()
     {
         if (IsServer)
